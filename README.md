@@ -41,3 +41,52 @@ Routes:
 /withdraw - Withdraw money page
 /transfer - Transfer money page
 
+
+Installation
+Backend Setup
+Clone the repository:
+
+
+git clone https://github.com/yourusername/banking-app.git
+
+cd banking-app/backend
+
+Create and activate a virtual environment:
+
+
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+
+Install dependencies:
+
+pip install -r requirements.txt
+
+Apply migrations:
+
+python manage.py migrate
+
+Run the development server:
+
+
+
+python manage.py runserver
+
+Frontend Setup
+Navigate to the frontend directory:
+
+
+cd ../bank-account-frontendfrontend
+
+Install dependencies:
+
+npm install
+
+Run the development server:
+
+npm start
+
+http://localhost:3000
+Create an account, then use the dashboard to perform deposits, withdrawals, and transfers.
+
+
+
