@@ -35,3 +35,34 @@
 .action-button:hover {
     background-color: #45a049;
 }
+
+/* src/components/AccountDashboard.css */
+
+.account-links {
+    margin-top: 20px;
+}
+
+.account-links h3 {
+    margin-bottom: 10px;
+    font-size: 1.5em;
+    color: #333;
+}
+
+.account-links ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.account-links li {
+    margin-bottom: 10px;
+}
+
+.account-links a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 1.1em;
+}
+
+.account-links a:hover {
+    text-decoration: underline;
+}

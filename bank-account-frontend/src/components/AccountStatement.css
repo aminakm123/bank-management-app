@@ -1,0 +1,43 @@
+.statement-container {
+    width: 80%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+.statement-container h2 {
+    margin-bottom: 20px;
+    font-size: 2em;
+    color: #333;
+    text-align: center;
+}
+
+.statement-container p {
+    text-align: center;
+    font-size: 1.1em;
+}
+
+.statement-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.statement-container th, .statement-container td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.statement-container th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.statement-container tr:hover {
+    background-color: #f9f9f9;
+}

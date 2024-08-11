@@ -16,3 +16,15 @@ class WithdrawalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = ['id', 'related_account', 'date', 'amount', 'transaction_type']
+
+class StatementSerializer(serializers.ModelSerializer):
+    related_account_balance = serializers.DecimalField(
+        source='related_account.balance',
+        max_digits=12,
+        decimal_places=2,
+        read_only=True
+    )
+
+    class Meta:
+        model = Transaction
+        fields = ['id', 'date', 'amount', 'transaction_type', 'related_account_balance']

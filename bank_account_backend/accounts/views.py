@@ -2,7 +2,7 @@ from decimal import Decimal, InvalidOperation
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import Account, Transaction
-from .serializers import AccountSerializer, TransactionSerializer, WithdrawalSerializer
+from .serializers import AccountSerializer, StatementSerializer, TransactionSerializer, WithdrawalSerializer
 from django.db import transaction as db_transaction
 from django.core.paginator import Paginator
 from datetime import datetime
@@ -20,8 +20,15 @@ class DepositMoney(generics.GenericAPIView):
     queryset = Account.objects.all()
     serializer_class = TransactionSerializer
 
-    def post(self, request, pk):
-        account = self.get_object()
+    def post(self, request):
+        account_number = request.data.get('account_number')
+
+        try:
+            # Retrieve the account based on the account number
+            account = Account.objects.get(account_number=account_number)
+        except Account.DoesNotExist:
+            return Response({'error': 'Account not found.'}, status=status.HTTP_404_NOT_FOUND)
+
         amount_str = request.data.get('amount', 0)
 
         try:
@@ -29,7 +36,6 @@ class DepositMoney(generics.GenericAPIView):
             amount = Decimal(amount_str)
         except ValueError:
             return Response({'error': 'Invalid amount. Please enter a valid number.'}, status=status.HTTP_400_BAD_REQUEST)
-
 
         if amount <= 0:
             return Response({'error': 'Deposit amount must be positive.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -37,6 +43,7 @@ class DepositMoney(generics.GenericAPIView):
         account.balance += amount
         account.save()
 
+        # Create a transaction record for the deposit
         Transaction.objects.create(
             account=account,
             amount=amount,
@@ -44,21 +51,27 @@ class DepositMoney(generics.GenericAPIView):
         )
 
         return Response({'status': 'Deposit successful'}, status=status.HTTP_200_OK)
-
+    
 class WithdrawMoney(generics.GenericAPIView):
     queryset = Account.objects.all()
     serializer_class = WithdrawalSerializer
 
-    def post(self, request, pk):
-        account = self.get_object()
+    def post(self, request):
+        account_number = request.data.get('account_number')
+
+        try:
+            # Retrieve the account based on the account number
+            account = Account.objects.get(account_number=account_number)
+        except Account.DoesNotExist:
+            return Response({'error': 'Account not found.'}, status=status.HTTP_404_NOT_FOUND)
+
         amount_str = request.data.get('amount', 0)
 
         try:
             # Convert the amount to a float or decimal for comparison and calculation
             amount = Decimal(amount_str)
-        except ValueError:
+        except InvalidOperation:
             return Response({'error': 'Invalid amount. Please enter a valid number.'}, status=status.HTTP_400_BAD_REQUEST)
-
 
         if amount <= 0:
             return Response({'error': 'Withdrawal amount must be positive.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -69,6 +82,7 @@ class WithdrawMoney(generics.GenericAPIView):
         account.balance -= amount
         account.save()
 
+        # Create a transaction record for the withdrawal
         Transaction.objects.create(
             account=account,
             amount=-amount,
@@ -82,23 +96,20 @@ class TransferMoney(generics.GenericAPIView):
     queryset = Account.objects.all()
     serializer_class = TransactionSerializer
 
-    def post(self, request, pk):
-        source_account = self.get_object()
+    def post(self, request):
+        source_account_number = request.data.get('source_account_number')
+        target_account_number = request.data.get('target_account_number')
         amount_str = request.data.get('amount', '0')  # Default to '0' if amount is missing
-        
-        # Instantiate and validate the serializer with incoming request data
-        transfer_serializer = self.serializer_class(data=request.data)
-        
-        # Check if the serializer data is valid
-        if not transfer_serializer.is_valid():
-            return Response(transfer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Extract the account (which is the target account in this context) from validated data
-        target_account = transfer_serializer.validated_data.get('account')
-        amount_str = transfer_serializer.validated_data.get('amount')
-
-        # Rest of your logic to perform the transfer
         try:
+            # Retrieve the source and target accounts based on their account numbers
+            source_account = Account.objects.get(account_number=source_account_number)
+            target_account = Account.objects.get(account_number=target_account_number)
+        except Account.DoesNotExist:
+            return Response({'error': 'One or both accounts not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # Convert the amount to a float or decimal for comparison and calculation
             amount = Decimal(amount_str)
         except InvalidOperation:
             return Response({'error': 'Invalid amount. Please enter a valid number.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -108,9 +119,6 @@ class TransferMoney(generics.GenericAPIView):
 
         if source_account.balance < amount:
             return Response({'error': 'Insufficient funds'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not target_account:
-            return Response({'error': 'Target account is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         with db_transaction.atomic():
             source_account.balance -= amount
@@ -136,7 +144,7 @@ class TransferMoney(generics.GenericAPIView):
         return Response({'status': 'Transfer successful'}, status=status.HTTP_200_OK)
 
 class AccountStatement(generics.ListAPIView):
-    serializer_class = TransactionSerializer
+    serializer_class = StatementSerializer
 
     def get_queryset(self):
         account = Account.objects.get(pk=self.kwargs['pk'])

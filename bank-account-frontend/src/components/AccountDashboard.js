@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "./AccountDashboard.css"; // Import the CSS file
+import "./AccountDashboard.css";
 
 axios.defaults.baseURL = 'http://localhost:8000';
 
@@ -14,14 +14,13 @@ const AccountDashboard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get("/")
+        axios.get("http://127.0.0.1:8000/")
             .then((response) => {
                 console.log(response.data); // Log the response data
                 setAccounts(response.data);
             })
             .catch((error) => console.error("Error fetching accounts:", error));
     }, []);
-    
 
     const handleAction = (action) => {
         setActionType(action);
@@ -96,7 +95,6 @@ const AccountDashboard = () => {
                                     Account: {account.account_number} - Balance: {account.balance}
                                 </option>
                             ))}
-
                         </select>
                         <input
                             type="number"
@@ -119,6 +117,18 @@ const AccountDashboard = () => {
                         </button>
                     </div>
                 )}
+            </div>
+            <div className="account-links">
+                <h3>Bank Accounts - Click To See the Statements</h3>
+                <ul>
+                    {accounts.map(account => (
+                        <li key={account.id}>
+                            <a href={`/account/${account.id}/statement/`} target="_blank" rel="noopener noreferrer">
+                                Account: {account.account_number}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
